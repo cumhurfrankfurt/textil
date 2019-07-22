@@ -1,1 +1,57 @@
-<!-- Insert markup for header here -->
+{% import "dtextil::PageDesign.Macros.LayoutContainer" as LayoutContainer %}
+
+{{ component( "dtextil::Customer.Components.UserLoginHandler" ) }}
+{{ component( "dtextil::PageDesign.Components.ShippingCountrySelect" ) }}
+{{ component( "dtextil::PageDesign.Components.MobileNavigation" ) }}
+{{ component( "dtextil::ItemList.Components.ItemSearch" ) }}
+{{ component( "dtextil::WishList.Components.WishListCount" ) }}
+{{ component( "dtextil::Basket.Components.BasketPreviewHover" ) }}
+
+{% set lang = services.sessionStorage.getLang() %}
+{% set enabledRoutes = config("IO.routing.enabled_routes") | split(', ') %}
+{% set activeCurrencies = config("Ceres.currency.available_currencies") | split(', ') %}
+{% set enableCurrencySelect = config("Ceres.currency.enable_selection") == "true" and activeCurrencies | length > 0 %}
+{% set currencyFormat = config("Ceres.currency.format") %}
+{% set currencyFormatSelect = config("Ceres.currency.format_selection") %}
+
+
+{% set headerContainer = LayoutContainer.show("Ceres::Header") | trim %}
+{% if headerContainer is empty %}
+    {% include "dtextil::PageDesign.Partials.Header.DefaultHeader" %}
+{% else %}
+<header id="page-header" class="fixed-top">
+    <div class="container-max">
+        <div class="row">
+            <div id="page-header-parent" class="col-12">
+                {{ headerContainer | raw }}
+            </div>
+        </div>
+    </div>
+</header>
+{% endif %}
+
+{% set scriptId = uid() %}
+<script id="{{ scriptId }}">
+    var vueApp = document.getElementById("vue-app");
+    var pageHeader = document.getElementById("page-header");
+
+    if ( !!vueApp && !!pageHeader )
+    {
+        vueApp.style.marginTop = pageHeader.getBoundingClientRect().height + 'px';
+    }
+
+    var scriptElement = document.getElementById("{{ scriptId }}");
+    scriptElement.parentElement.removeChild(scriptElement);
+</script>
+
+<div>
+    {% if category.linklist == "Y" %}
+        {% set initialCategory = { id: category.id } %}
+    {% else %}
+        {% set initialCategory = category %}
+    {% endif %}
+    <mobile-navigation
+            :initial-category="{{ initialCategory | json_encode }}"
+            template="#vue-mobile-navigation">
+    </mobile-navigation>
+</div>

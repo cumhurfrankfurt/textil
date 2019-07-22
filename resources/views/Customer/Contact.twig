@@ -1,1 +1,23 @@
-<!-- Insert markup for contact page here -->
+{% extends getPartial('page-design') %}
+
+{% block PartialHead %}
+    {% embed getPartial('page-metadata') %}
+        {% block title          trans('Ceres::Template.contact') %}
+        {% block description    trans('Ceres::Template.contactMetaDescription') %}
+        {% block robots         ceresConfig.meta.robotsContact %}
+    {% endembed %}
+
+    {% if config("Ceres.global.google_recaptcha_api_key") | length > 0 %}
+        <script src='https://www.google.com/recaptcha/api.js' async defer></script>
+    {% endif %}
+{% endblock %}
+
+{% block PageBody %}
+
+    {{ component( "dtextil::Customer.Components.Contact.ContactForm" ) }}
+
+    <div class="page-content container-max contact">
+        <contact-form template="#vue-contact-form"></contact-form>
+    </div>
+
+{% endblock %}

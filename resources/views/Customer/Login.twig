@@ -1,1 +1,15 @@
-<!-- Insert markup for login page here -->
+{% extends getPartial('page-design') %}
+
+{% block PartialHead %}
+    {% embed getPartial('page-metadata') %}
+        {% block title trans("Ceres::Template.login") %}
+    {% endembed %}
+{% endblock %}
+
+{% block PageBody %}
+    {{ component( "dtextil::Customer.Components.LoginView") }}
+    {{ component( "dtextil::Customer.Components.Login") }}
+    {{ component( "dtextil::Customer.Components.GuestLogin") }}
+
+    <login-view template="#vue-login-view"></login-view>
+{% endblock %}
