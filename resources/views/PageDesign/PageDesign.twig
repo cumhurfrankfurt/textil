@@ -7,8 +7,8 @@
 {{ component( "dtextil::Customer.Components.Registration" ) }}
 {{ component( "dtextil::Basket.Components.AddItemToBasketOverlay" ) }}
 {{ component( "dtextil::PageDesign.Components.Popper" ) }}
+{{ component( "dtextil::Category.Components.CategoryBreadcrumbs" ) }}
 {{ component( "dtextil::Customer.Components.ForgotPassword" ) }}
-{{ component("Ceres::Customer.Components.Contact.AcceptPrivacyPolicyCheck") }}
 
 {# TODO: remove if shop builder pages can be rebuild by migrations #}
 {{ component( "dtextil::Containers.Components.LastSeenItemList" ) }}
@@ -20,13 +20,11 @@
     {% include "dtextil::Widgets.WidgetComponents" %}
 {% endif %}
 
+
 {% set currencyFormat = config("Ceres.currency.format") %}
 {% set defaultLanguage = services.webstoreConfig.getDefaultLanguage() %}
 
-{% if request.get('openBasketPreview') == 1 %}
-    {% set openBasketClass = "open-" ~ ceresConfig.basket.previewType %}
-{% endif %}
-
+{% spaceless %}
 <!DOCTYPE html>
 
 <html lang="{{ lang }}" data-framework="vue" prefix="og: http://ogp.me/ns#">
@@ -246,11 +244,13 @@
         });
     {% endif %}
 
-    (function($, MediaQueryHelper) {
+
+    (function($) {
+
         var vueApp = document.getElementById('vue-app');
         var headerParent = document.getElementById('page-header-parent');
         var headerLoaded = false;
-        var allHeaderChildrenHeights = [];
+        var allElementHeights = [];
 
         if ( !!headerParent )
         {
@@ -261,23 +261,26 @@
                 if (headerLoaded && headerParent)
                 {
                     var bodyOffset = 0;
-                    
+                    // Get current header with children
+                    if(headerParent === null){
+                        return;
+                    }
+
                     for( var i = 0; i < headerChildren.length; i++ )
                     {
                         bodyOffset += headerChildren[i].getBoundingClientRect().height;
                     }
+
                     vueApp.style.marginTop = bodyOffset + 'px';
                     vueApp.style.minHeight = "calc(100vh - " + bodyOffset + "px)";
                 }
             }
 
-            function getHeaderChildrenHeights()
+            function getHeaderElementsHeights()
             {
-                allHeaderChildrenHeights = [];
-
                 for (var i = 0; i < headerChildren.length; i++)
                 {
-                    allHeaderChildrenHeights.push(headerChildren[i].getBoundingClientRect().height);
+                    allElementHeights.push(headerChildren[i].getBoundingClientRect().height);
                 }
             }
 
@@ -286,7 +289,7 @@
                 if (headerLoaded && !App.isShopBuilder)
                 {
                     var absolutePos = 0;
-                    var fixedElementsHeight = 0; 
+                    var fixedElementsHeight = 0;
                     var offset = 0;
                     var scrollTop = window.pageYOffset;
                     var zIndex = 100;
@@ -294,8 +297,8 @@
                     for (var i = 0; i < headerChildren.length; i++)
                     {
                         var elem = headerChildren[i];
-                        var elemHeight = allHeaderChildrenHeights[i];
-                        
+                        var elemHeight = allElementHeights[i];
+
                         offset = absolutePos - scrollTop;
                         elem.style.position = "absolute";
                         elem.style.zIndex = zIndex;
@@ -307,7 +310,7 @@
                             {
                                 elem.style.top = 0;
                             }
-                            else 
+                            else
                             {
                                 elem.style.top = offset + 'px';
                             }
@@ -317,9 +320,9 @@
                                 elem.style.top = fixedElementsHeight + 'px';
                             }
 
-                            fixedElementsHeight = fixedElementsHeight + elemHeight;  
-                        } 
-                        else 
+                            fixedElementsHeight = fixedElementsHeight + elemHeight;
+                        }
+                        else
                         {
                             elem.style.top = offset + 'px';
                         }
@@ -327,13 +330,6 @@
                     }
                 }
             }
-
-            // When window resize to another breakpoint execute functions
-            MediaQueryHelper.addFunction(function(){
-                calculateBodyOffset();
-                getHeaderChildrenHeights();
-                scrollHeaderElements();
-            }); 
 
             $(window).scroll(scrollHeaderElements);
 
@@ -360,7 +356,7 @@
             {
                 // Initialize
                 headerLoaded = true;
-                getHeaderChildrenHeights();
+                getHeaderElementsHeights();
                 scrollHeaderElements();
                 calculateBodyOffset();
             });
@@ -390,7 +386,7 @@
         });
 
 
-    })(jQuery, MediaQueryHelper);
+    })(jQuery);
 </script>
 
 {{ get_shop_builder_scripts( "latest", ceresConfig.log.performanceLevel == 'live') }}
